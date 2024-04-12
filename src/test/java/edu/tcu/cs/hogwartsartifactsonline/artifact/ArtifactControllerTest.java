@@ -113,7 +113,7 @@ class ArtifactControllerTest {
     @Test
     void testFindArtifactByIdNotFound() throws Exception {
         //Given
-        given(this.artifactService.findById("1250808601744904191")).willThrow(new ObjectNotFoundException("1250808601744904191"));
+        given(this.artifactService.findById("1250808601744904191")).willThrow(new ObjectNotFoundException("artifact", "1250808601744904191"));
 
         //When and then
         this.mockMvc.perform(get(this.baseUrl + "/artifacts/1250808601744904191").accept(MediaType.APPLICATION_JSON))
@@ -201,14 +201,15 @@ class ArtifactControllerTest {
     void testUpdateArtifactErrorWithNonExistenceId() throws Exception {
         //Given
         ArtifactDto artifactDto = new ArtifactDto("1250808601744904192",
-                "Invisibility Cloak", "A new description.",
-                "ImageUrl",
-                null);
+                                                "Invisibility Cloak",
+                                                "A new description.",
+                                                "ImageUrl",
+                                                null);
 
         String json = this.objectMapper.writeValueAsString(artifactDto);
 
 
-        given(this.artifactService.update(eq("1250808601744904192"), Mockito.any(Artifact.class))).willThrow(new ObjectNotFoundException("1250808601744904192"));
+        given(this.artifactService.update(eq("1250808601744904192"), Mockito.any(Artifact.class))).willThrow(new ObjectNotFoundException("artfact", "1250808601744904192"));
 
         //When and then
         this.mockMvc.perform(put(this.baseUrl + "/artifacts/1250808601744904192").contentType(MediaType.APPLICATION_JSON).content(json).accept(MediaType.APPLICATION_JSON))
@@ -235,7 +236,7 @@ class ArtifactControllerTest {
     @Test
     void testDeleteArtifactErrorWithNonExistentId() throws Exception {
         //Given
-        doThrow(new ObjectNotFoundException("1250808601744904191")).when(this.artifactService).delete("1250808601744904191");
+        doThrow(new ObjectNotFoundException("artifact", "1250808601744904191")).when(this.artifactService).delete("1250808601744904191");
         //When and then
         this.mockMvc.perform(delete(this.baseUrl + "/artifacts/1250808601744904191").accept(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.flag").value(false))
