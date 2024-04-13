@@ -36,7 +36,7 @@ public class UserController {
         return new Result(true, StatusCode.SUCCESS, "Find All Success", userDtos);
     }
 
-    @GetMapping("/{userId")
+    @GetMapping("/{userId}")
     public Result findUserById(@PathVariable Integer userId) {
         HogwartsUser foundHogwartsUser = this.userService.findById(userId);
         UserDto userDto = this.userToUserDtoConverter.convert(foundHogwartsUser);
@@ -50,7 +50,7 @@ public class UserController {
         return new Result(true, StatusCode.SUCCESS, "Add Success", savedUserDto);
     }
 
-    @PutMapping("{userId")
+    @PutMapping("{userId}")
     public Result updateUser(@PathVariable Integer userId, @Valid @RequestBody UserDto userDto) {
         HogwartsUser update = this.userDtoToUserConverter.convert(userDto);
         HogwartsUser updatedHogwartsUser = this.userService.update(userId, update);
@@ -58,7 +58,7 @@ public class UserController {
         return new Result(true, StatusCode.SUCCESS, "Update Success", updatedUserDto);
     }
 
-    @DeleteMapping("/{userId")
+    @DeleteMapping("/{userId}")
     public Result deleteUser(@PathVariable Integer userId) {
         this.userService.delete(userId);
         return new Result(true, StatusCode.SUCCESS, "Delete Success");
