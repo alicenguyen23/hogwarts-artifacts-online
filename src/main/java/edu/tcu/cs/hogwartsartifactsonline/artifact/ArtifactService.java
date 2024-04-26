@@ -21,7 +21,7 @@ public class ArtifactService {
 
     public Artifact findById(String artifactId) {
         return this.artifactRepository.findById(artifactId)
-                .orElseThrow(() -> new ObjectNotFoundException("artfact", artifactId));
+                .orElseThrow(() -> new ObjectNotFoundException("artifact", artifactId));
     }
     public List<Artifact> findAll() {
 
