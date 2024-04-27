@@ -1,3 +1,4 @@
+
 package edu.tcu.cs.hogwartsartifactsonline.artifact;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,8 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import javax.swing.text.html.Option;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,10 +33,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
+// For JUnit 5, we need to use @ExtendWith.
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles(value = "dev")
 class ArtifactServiceTest {
 
-    @Mock
+    @Mock // @Mock defines a Mockito mock object for ArtifactRepository.
     ArtifactRepository artifactRepository;
 
     @Mock
@@ -45,24 +47,25 @@ class ArtifactServiceTest {
     @Mock
     ChatClient chatClient;
 
-    @InjectMocks
+    @InjectMocks // The Mockito mock objects for ArtifactRepository and IdWorker will be injected into artifactService.
     ArtifactService artifactService;
 
     List<Artifact> artifacts;
+
 
     @BeforeEach
     void setUp() {
         Artifact a1 = new Artifact();
         a1.setId("1250808601744904191");
         a1.setName("Deluminator");
-        a1.setDescription("A Deluminator is a device invented by Albus Dumbledore that resembles a cigarette lighter. It is used to remove or absorb (as well as return) the light from any light source to provide cover to the user.\",\n");
-        a1.setImageUrl("ImageUrl");
+        a1.setDescription("A Deluminator is a device invented by Albus Dumbledore that resembles a cigarette lighter. It is used to remove or absorb (as well as return) the light from any light source to provide cover to the user.");
+        a1.setImageUrl("imageUrl");
 
         Artifact a2 = new Artifact();
         a2.setId("1250808601744904192");
         a2.setName("Invisibility Cloak");
         a2.setDescription("An invisibility cloak is used to make the wearer invisible.");
-        a2.setImageUrl("ImageUrl");
+        a2.setImageUrl("imageUrl");
 
         this.artifacts = new ArrayList<>();
         this.artifacts.add(a1);
@@ -74,7 +77,14 @@ class ArtifactServiceTest {
     }
 
     @Test
-    void findByIdSuccess() {
+    void testFindByIdSuccess() {
+        // Given. Arrange inputs and targets. Define the behavior of Mock object artifactRepository.
+        /*
+        "id": "1250808601744904192",
+        "name": "Invisibility Cloak",
+        "description": "An invisibility cloak is used to make the wearer invisible.",
+        "imageUrl": "ImageUrl",
+         */
         Artifact a = new Artifact();
         a.setId("1250808601744904192");
         a.setName("Invisibility Cloak");
@@ -84,73 +94,80 @@ class ArtifactServiceTest {
         Wizard w = new Wizard();
         w.setId(2);
         w.setName("Harry Potter");
+
         a.setOwner(w);
 
-        given(artifactRepository.findById("1250808601744904192")).willReturn(Optional.of(a));
+        given(this.artifactRepository.findById("1250808601744904192")).willReturn(Optional.of(a)); // Define the behavior of the mock object.
 
-        //When. Act on the target behavior. When steps should cover the method to be tested.
-        Artifact returnedArtifact = artifactService.findById("1250808601744904192");
+        // When. Act on the target behavior. When steps should cover the method to be tested.
+        Artifact returnedArtifact = this.artifactService.findById("1250808601744904192");
 
-        //Then. Assert expected outcomes.
+        // Then. Assert expected outcomes.
         assertThat(returnedArtifact.getId()).isEqualTo(a.getId());
         assertThat(returnedArtifact.getName()).isEqualTo(a.getName());
         assertThat(returnedArtifact.getDescription()).isEqualTo(a.getDescription());
         assertThat(returnedArtifact.getImageUrl()).isEqualTo(a.getImageUrl());
+        assertThat(returnedArtifact.getOwner()).isNotNull();
 
-        verify(artifactRepository, times(1)).findById("1250808601744904192");
+        // Verify artifactRepository.findById() is called exactly once with "1250808601744904192".
+        verify(this.artifactRepository, times(1)).findById("1250808601744904192");
     }
+
     @Test
     void testFindByIdNotFound() {
-        //Given
-        given(artifactRepository.findById(Mockito.any(String.class))).willReturn(Optional.empty());
+        // Given
+        given(this.artifactRepository.findById(Mockito.any(String.class))).willReturn(Optional.empty());
 
-        //When
-        Throwable thrown = catchThrowable(()->{
-            Artifact returnedArtifact = artifactService.findById("1250808601744904192");
+        // When
+        Throwable thrown = catchThrowable(() -> {
+            Artifact returnedArtifact = this.artifactService.findById("1250808601744904192");
         });
-        //Then
-        assertThat(thrown).
-                isInstanceOf(ObjectNotFoundException.class).
-                hasMessage("Could not find artifact with Id 1250808601744904192 :(");
-        verify(artifactRepository, times(1)).findById("1250808601744904192");
+
+        // Then
+        assertThat(thrown)
+                .isInstanceOf(ObjectNotFoundException.class)
+                .hasMessage("Could not find artifact with Id 1250808601744904192 :(");
+        verify(this.artifactRepository, times(1)).findById("1250808601744904192");
     }
 
     @Test
-    void testFindALlSuccess() {
-        //Given
-        given(artifactRepository.findAll()).willReturn(this.artifacts);
-        //When
-        List<Artifact> actualArtifacts = artifactService.findAll();
-        //Then
+    void testFindAllSuccess() {
+        // Given
+        given(this.artifactRepository.findAll()).willReturn(this.artifacts);
+
+        // When
+        List<Artifact> actualArtifacts = this.artifactService.findAll();
+
+        // Then
         assertThat(actualArtifacts.size()).isEqualTo(this.artifacts.size());
-        verify(artifactRepository, times(1)).findAll();
+        verify(this.artifactRepository, times(1)).findAll();
     }
 
     @Test
     void testSaveSuccess() {
-        //Given
+        // Given
         Artifact newArtifact = new Artifact();
         newArtifact.setName("Artifact 3");
         newArtifact.setDescription("Description...");
         newArtifact.setImageUrl("ImageUrl...");
 
-        given(idWorker.nextId()).willReturn(123456L);
-        given(artifactRepository.save(newArtifact)).willReturn(newArtifact);
+        given(this.idWorker.nextId()).willReturn(123456L);
+        given(this.artifactRepository.save(newArtifact)).willReturn(newArtifact);
 
-        //When
-        Artifact savedArtifact = artifactService.save(newArtifact);
+        // When
+        Artifact savedArtifact = this.artifactService.save(newArtifact);
 
-        //Then
+        // Then
         assertThat(savedArtifact.getId()).isEqualTo("123456");
         assertThat(savedArtifact.getName()).isEqualTo(newArtifact.getName());
         assertThat(savedArtifact.getDescription()).isEqualTo(newArtifact.getDescription());
         assertThat(savedArtifact.getImageUrl()).isEqualTo(newArtifact.getImageUrl());
-        verify(artifactRepository, times(1)).save(newArtifact);
+        verify(this.artifactRepository, times(1)).save(newArtifact);
     }
 
     @Test
     void testUpdateSuccess() {
-        //Given
+        // Given
         Artifact oldArtifact = new Artifact();
         oldArtifact.setId("1250808601744904192");
         oldArtifact.setName("Invisibility Cloak");
@@ -158,78 +175,74 @@ class ArtifactServiceTest {
         oldArtifact.setImageUrl("ImageUrl");
 
         Artifact update = new Artifact();
-        update.setId("1250808601744904192");
+        // update.setId("1250808601744904192");
         update.setName("Invisibility Cloak");
         update.setDescription("A new description.");
         update.setImageUrl("ImageUrl");
 
-        given(artifactRepository.findById("1250808601744904192")).willReturn(Optional.of(oldArtifact));
-        given(artifactRepository.save(oldArtifact)).willReturn(oldArtifact);
+        given(this.artifactRepository.findById("1250808601744904192")).willReturn(Optional.of(oldArtifact));
+        given(this.artifactRepository.save(oldArtifact)).willReturn(oldArtifact);
 
-        //When
-        Artifact updatedArtifact = artifactService.update("1250808601744904192", update);
+        // When
+        Artifact updatedArtifact = this.artifactService.update("1250808601744904192", update);
 
-        //Then
-        assertThat(updatedArtifact.getId()).isEqualTo(update.getId());
+        // Then
+        assertThat(updatedArtifact.getId()).isEqualTo("1250808601744904192");
         assertThat(updatedArtifact.getDescription()).isEqualTo(update.getDescription());
-        verify(artifactRepository, times(1)).findById("1250808601744904192");
-        verify(artifactRepository, times(1)).save(oldArtifact);
-
+        verify(this.artifactRepository, times(1)).findById("1250808601744904192");
+        verify(this.artifactRepository, times(1)).save(oldArtifact);
     }
 
     @Test
     void testUpdateNotFound() {
-        //Given
+        // Given
         Artifact update = new Artifact();
-        update.setId("1250808601744904192");
         update.setName("Invisibility Cloak");
         update.setDescription("A new description.");
         update.setImageUrl("ImageUrl");
 
-        given(artifactRepository.findById("1250808601744904192")).willReturn(Optional.empty());
+        given(this.artifactRepository.findById("1250808601744904192")).willReturn(Optional.empty());
 
-        //When
+        // When
         assertThrows(ObjectNotFoundException.class, () -> {
-            artifactService.update("1250808601744904192", update);
+            this.artifactService.update("1250808601744904192", update);
         });
 
-        //Then
-        verify(artifactRepository, times(1)).findById("1250808601744904192");
-
+        // Then
+        verify(this.artifactRepository, times(1)).findById("1250808601744904192");
     }
 
     @Test
     void testDeleteSuccess() {
-        //Given
+        // Given
         Artifact artifact = new Artifact();
         artifact.setId("1250808601744904192");
         artifact.setName("Invisibility Cloak");
         artifact.setDescription("An invisibility cloak is used to make the wearer invisible.");
         artifact.setImageUrl("ImageUrl");
 
-        given(artifactRepository.findById("1250808601744904192")).willReturn(Optional.of(artifact));
+        given(this.artifactRepository.findById("1250808601744904192")).willReturn(Optional.of(artifact));
+        doNothing().when(this.artifactRepository).deleteById("1250808601744904192");
 
-        doNothing().when(artifactRepository).deleteById("1250808601744904192");
+        // When
+        this.artifactService.delete("1250808601744904192");
 
-        //When
-        artifactService.delete("1250808601744904192");
-
-        //Then
-        verify(artifactRepository, times(1)).deleteById("1250808601744904192");
-
+        // Then
+        verify(this.artifactRepository, times(1)).deleteById("1250808601744904192");
     }
 
     @Test
     void testDeleteNotFound() {
-        //Given
-        given(artifactRepository.findById("1250808601744904192")).willReturn(Optional.empty());
+        // Given
+        given(this.artifactRepository.findById("1250808601744904192")).willReturn(Optional.empty());
 
-        //When
+        // When
         assertThrows(ObjectNotFoundException.class, () -> {
-           artifactService.delete("1250808601744904192");
+            this.artifactService.delete("1250808601744904192");
         });
-        //Then
-        verify(artifactRepository, times(1)).findById("1250808601744904192");
+
+        // Then
+        verify(this.artifactRepository, times(1)).findById("1250808601744904192");
     }
 
     @Test
