@@ -11,8 +11,13 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 
+/**
+ * This class handles unsuccessful basic authentication.
+ * We implement AuthenticationEntryPoint and then delegate the exception handler to HandlerExceptionResolver.
+ */
 @Component
 public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
     private final HandlerExceptionResolver resolver;
 
     public CustomBasicAuthenticationEntryPoint(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {

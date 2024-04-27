@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
+
     private final AuthService authService;
 
     public AuthController(AuthService authService) {
@@ -25,4 +26,5 @@ public class AuthController {
         LOGGER.debug("Authenticated user: '{}'", authentication.getName());
         return new Result(true, StatusCode.SUCCESS, "User Info and JSON Web Token", this.authService.createLoginInfo(authentication));
     }
+
 }

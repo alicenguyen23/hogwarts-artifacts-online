@@ -1,7 +1,6 @@
 package edu.tcu.cs.hogwartsartifactsonline.security;
 
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -24,10 +23,11 @@ public class JwtProvider {
         Instant now = Instant.now();
         long expiresIn = 2; // 2 hours
 
-        // Prepare a claim called authorities
+        // Prepare a claim called authorities.
         String authorities = authentication.getAuthorities().stream()
                 .map(grantedAuthority -> grantedAuthority.getAuthority())
-                .collect(Collectors.joining(" ")); // Must use space delimiter
+                .collect(Collectors.joining(" "));// MUST BE space-delimited.
+
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(now)
@@ -38,4 +38,5 @@ public class JwtProvider {
 
         return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
+
 }
